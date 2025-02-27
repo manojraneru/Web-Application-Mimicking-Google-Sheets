@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Clone</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@material-ui/core@4.11.3/dist/css/material-ui.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #spreadsheet {
+            border-collapse: collapse;
+        }
+        #spreadsheet td, #spreadsheet th {
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+        #toolbar {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        #formula-bar {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button id="add-row-btn">Add Row</button>
+        <button id="add-col-btn">Add Column</button>
+        <button id="remove-row-btn">Remove Row</button>
+        <button id="remove-col-btn">Remove Column</button>
+        <select id="font-size-select">
+            <option value="12">12</option>
+            <option value="14">14</option>
+            <option value="16">16</option>
+        </select>
+    </div>
+    <div id="formula-bar">
+        <input id="formula-input" type="text" placeholder="Enter formula">
+        <button id="eval-formula-btn">Evaluate</button>
+        <button id="clear-formula-btn">Clear</button>
+    </div>
+    <table id="spreadsheet">
+        <thead>
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+            </tr>
+        </thead>
+        <tbody id="spreadsheet-body">
+            <tr>
+                <th>1</th>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+                <td><input type="text"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.11.3/dist/js/material-ui.min.js"></script>
+    <script>
+        // Cell data storage
+        let cells = {};
+        
+        // Cell dependencies
+        let dependencies = {};
+        
+        // Add event listeners
+        document.getElementById('add-row-btn').addEventListener('click', addRow);
+        document.getElementById('add-col-btn').addEventListener('click', addCol);
+        document.getElementById('remove-row-btn').addEventListener('click', removeRow);
+        document.getElementById('remove-col-btn').addEventListener('click', removeCol);
+        document.getElementById('font-size-select').addEventListener('change', changeFontSize);
+        document.getElementById('eval-formula-btn').addEventListener('click', evalFormula);
+        document.getElementById('clear-formula-btn').addEventListener('click', clearFormula);
+        
+        // Initialize spreadsheet
+        initSpreadsheet();
+        
+        function initSpreadsheet() {
+            // Initialize cells and dependencies
+            for (let i = 0; i < 10; i++) {
+                cells[i] = {};
+                dependencies[i] = {};
+                for (let j = 0; j < 10; j++) {
+                    cells[i][j] = '';
+                    dependencies[i][j] = [];
+                }
+            }
+        }
+        
+        function addRow() {
+            // Add new row to spreadsheet
+            let newRow = document.createElement('tr');
+            let newRowHtml = '';
+            for (let i = 0; i < 10; i++) {
+                newRowHtml += '<td><input type="text"></td>';
+            }
+            newRow.innerHTML = newRowHtml;
+            document.getElementById('spreadsheet-body').appendChild(newRow);
+        }
+        
+        function addCol() {
+            // Add new column to spreadsheet
+            let newCol = document.createElement('th');
+            newCol.textContent = 'F';
+            document.querySelector('#spreadsheet thead tr').appendChild(newCol);
+            for (let i = 0; i < 10; i++) {
+                let newRowCell = document.createElement('td');
+                newRowCell.innerHTML = '<input type="text">';
+                document.querySelector(`#spreadsheet-body tr:nth-child(${i+1})`).appendChild(newRowCell);
+            }
+        }
+        
+        function removeRow() {
+            // Remove last row from spreadsheet
+            document.getElementById('spreadsheet-body').lastChild.remove();
+        }
+        
+        function removeCol() {
+            // Remove last column from spreadsheet
+            document.querySelector('#spreadsheet thead tr').lastChild.remove();
+            for (let i = 0; i < 10; i++) {
+                document.querySelector(`#spreadsheet-body tr:nth-child(${i+1})`).lastChild.remove();
+            }
+        }
+        
+        function changeFontSize() {
+            // Change font size of cell input
+            let fontSize = document.getElementById('font-size-select').value;
+            let inputs = document.querySelectorAll('#spreadsheet input');
+            inputs.forEach(input => {
+                input.style.fontSize = fontSize + 'px';
+            });
+        }
+        
+        function evalFormula() {
+            // Evaluate formula in formula bar
+            let formula = document.getElementById('formula-input').value;
+            // Implement formula evaluation logic here
+            console.log(formula);
+        }
+        
+        function clearFormula() {
+            // Clear formula bar
+            document.getElementById('formula-input').value = '';
+        }
+        
+        function sumRange(range) {
+            // SUM function
+            let sum = 0;
+            range.forEach(cell => {
+                sum += parseFloat(cells[cell[0]][cell[1]]);
+            });
+            return sum;
+        }
+        
+        function averageRange(range) {
+            // AVERAGE function
+            let sum = 0;
+            range.forEach(cell => {
+                sum += parseFloat(cells[cell[0]][cell[1]]);
+            });
+            return sum / range.length;
+        }
+        
+        function maxRange(range) {
+            // MAX function
+            let max = -Infinity;
+            range.forEach(cell => {
+                let value = parseFloat(cells[cell[0]][cell[1]]);
+                if (value > max) {
+                    max = value;
+                }
+            });
+            return max;
+        }
+        
+        function minRange(range) {
+            // MIN function
+            let min = Infinity;
+            range.forEach(cell => {
+                let value = parseFloat(cells[cell[0]][cell[1]]);
+                if (value < min) {
+                    min = value;
+                }
+            });
+            return min;
+        }
+        
+        function countRange(range) {
+            // COUNT function
+            let count = 0;
+            range.forEach(cell => {
+                if (!isNaN(parseFloat(cells[cell[0]][cell[1]]))) {
+                    count++;
+                }
+            });
+            return count;
+        }
+        
+        function trimCell(cell) {
+            // TRIM function
+            return cells[cell[0]][cell[1]].trim();
+        }
+        
+        function upperCell(cell) {
+            // UPPER function
+            return cells[cell[0]][cell[1]].toUpperCase();
+        }
+        
+        function lowerCell(cell) {
+            // LOWER function
+            return cells[cell[0]][cell[1]].toLowerCase();
+        }
+        
+        function removeDuplicatesRange(range) {
+            // REMOVE_DUPLICATES function
+            let uniqueValues = [];
+            range.forEach(cell => {
+                if (!uniqueValues.includes(cells[cell[0]][cell[1]])) {
+                    uniqueValues.push(cells[cell[0]][cell[1]]);
+                }
+            });
+            return uniqueValues;
+        }
+        
+        function findAndReplaceRange(range, find, replace) {
+            // FIND_AND_REPLACE function
+            range.forEach(cell => {
+                cells[cell[0]][cell[1]] = cells[cell[0]][cell[1]].replace(find, replace);
+            });
+        }
+    </script>
+</body>
+</html>
